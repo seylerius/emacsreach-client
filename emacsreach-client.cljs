@@ -32,6 +32,12 @@
 
 (def *machine* (:MACHINE *env*))
 
+(defn path-exists?
+  "Determine if the file or directory exists"
+  [path]
+  (or (io/file? path)
+      (io/directory? path)))
+
 (defn can-sudo?
   "Can the current user use sudo?"
   []
@@ -69,7 +75,13 @@
 (defn tramp-prefix
   "Wrap the specified file with an appropriate TRAMP prefix if needed"
   [filename]
-  (let [[permissions user group] (file-permissions filename)
+  (let [check-path (if (path-exists? filename)
+                     filename
+                     (-> filename
+                         (str/split "/")
+                         drop-last
+                         (#(str/join "/" %))))
+        [permissions user group] (file-permissions check-path)
         bitmask (usable-bitmask user group)
         rw (read-writable? permissions bitmask)
         sudo-spec (if (and (not rw) (can-sudo?))
@@ -131,8 +143,8 @@
          (str/join "&")
          (str "?"))))
 
-(defn emacsclient
-  "Call emacsclient API with specified TRAMP spec, file, and options"
+(defn emacsreach
+  "Call emacsreach API with specified TRAMP spec, file, and options"
   [file options]
   (http/get (str "https://127.0.0.1:36227/"
                  (tramp-prefix file)
@@ -143,4 +155,4 @@
         options (dissoc parsed-args :args)
         args (:args parsed-args)]
     (doseq [file args]
-      (emacsclient file options))))
+      (emacsreach file options))))
