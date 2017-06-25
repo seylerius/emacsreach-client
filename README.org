@@ -1,3 +1,5 @@
 #+title: emacsreach-client
 
-Client script to extend the reach of Emacs across permission and remote access boundar
+Client script to extend the reach of Emacs across permission and remote access boundaries. 
+
+Install as `edit` or `er` on your local machine and any remotes you choose. Set `MACHINE` in your env to provide automatic TRAMP prefixing. 
